@@ -1,0 +1,29 @@
+CREATE TABLE user_groups (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE group_memberships (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    group_id BIGINT NOT NULL,
+    user_id CHAR(36) NOT NULL,
+    role ENUM('MEMBER', 'ADMIN') NOT NULL DEFAULT 'MEMBER',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_membership (group_id, user_id),
+    FOREIGN KEY (group_id) REFERENCES user_groups(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE messages (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    message_type VARCHAR(10) NOT NULL,
+    sender_id CHAR(36) NOT NULL,
+    content TEXT NOT NULL,
+    receiver_id CHAR(36) DEFAULT NULL,
+    group_id BIGINT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES user_groups(id) ON DELETE CASCADE
+);

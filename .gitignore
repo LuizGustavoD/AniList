@@ -1,0 +1,46 @@
+# IDE
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Build
+target/
+build/
+
+# Java / Spring
+*.yml
+*.xml
+!**/pom.xml
+!**/docker-compose.yml
+!frontend/**/pubspec.yaml
+!frontend/**/analysis_options.yaml
+
+# Chaves criptográficas
+private/
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+
+# Variáveis de ambiente
+.env
+.env.*
+
+# Logs
+logs/
+
+# Uploads (dados de usuários)
+uploads/
+
+# Flutter/Dart gerados
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/local.properties
+**/flutter_export_environment.sh
+**/Generated.xcconfig
+**/Flutter-Generated.xcconfig
+**/ephemeral/

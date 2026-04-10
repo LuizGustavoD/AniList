@@ -1,0 +1,13 @@
+ALTER TABLE anime ADD COLUMN mal_id BIGINT UNSIGNED NOT NULL AFTER id;
+ALTER TABLE anime ADD COLUMN image_url VARCHAR(512) DEFAULT NULL AFTER description;
+ALTER TABLE anime ADD UNIQUE INDEX uq_anime_mal_id (mal_id);
+
+ALTER TABLE user_anime ADD COLUMN is_favorite BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE user_anime MODIFY COLUMN status ENUM('WATCHING','COMPLETED','DROPPED','PLAN_TO_WATCH','ON_HOLD') DEFAULT 'WATCHING';
+
+ALTER TABLE user_anime ADD UNIQUE INDEX uq_user_anime (user_id, anime_id);
+
+ALTER TABLE reviews ADD UNIQUE INDEX uq_user_review (user_id, anime_id);
+
+ALTER TABLE users ADD COLUMN about TEXT DEFAULT NULL AFTER email;
