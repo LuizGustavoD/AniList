@@ -61,10 +61,8 @@ public class UserProfileController {
     @PostMapping("/update")
     public ResponseEntity<String> updateUserAttributes(JwtAuthenticationToken authentication, @RequestBody ChangeUserAtributesDTO request) {
         String username = authentication.getToken().getSubject();
-        if (!username.equals(request.username())) {
-            return ResponseEntity.status(403).body("You can only update your own profile");
-        }
-        return ResponseEntity.ok(userProfileService.changeUserAttibutes(request));
+
+        return ResponseEntity.ok(userProfileService.changeUserAttibutes(request, username));
     }
 
 }

@@ -58,4 +58,9 @@ public class UserModel {
     @JoinColumn(name = "role_id", nullable = false)
     private RolesModel role;
 
+    public UserModel orElseThrow(Object object) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
+    }
+
 }

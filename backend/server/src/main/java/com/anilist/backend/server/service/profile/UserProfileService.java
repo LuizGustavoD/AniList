@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.core.io.Resource;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserProfileService {
 
+    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
 
@@ -73,9 +75,13 @@ public class UserProfileService {
         return fileStorageService.load(filename);
     }
 
-    public String changeUserAttibutes(ChangeUserAtributesDTO request){
-        UserModel user = userRepository.findByUsername(request.username())
+    public String changeUserAttibutes(ChangeUserAtributesDTO request, String username) {
+        UserModel user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            return "Incorrect password. User attributes not updated.";
+        }
 
         if (request.email() != null) {
             user.setEmail(request.email());
@@ -89,6 +95,6 @@ public class UserProfileService {
 
         userRepository.save(user);
         return "User attributes updated successfully";
-        
+
     }
 }

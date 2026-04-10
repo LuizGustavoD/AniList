@@ -1,0 +1,1 @@
+UPDATE users ADD COLUMN banner_url VARCHAR(512) DEFAULT NULL AFTER about;

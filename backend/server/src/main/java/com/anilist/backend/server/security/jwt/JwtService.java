@@ -26,6 +26,18 @@ public class JwtService {
     @Value("${jwt.confirm-expiration}")
     private long confirmExpiration;
 
+    public String generateResetPasswordToken(UserModel user) {
+        Instant now = Instant.now();
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+            .subject(user.getUsername())
+            .claim("email", user.getEmail())
+            .claim("type", "reset")
+            .issuedAt(now)
+            .expiresAt(now.plusMillis(confirmExpiration))
+            .build();
+        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    }
+
     public String generateConfirmToken(UserModel user) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
@@ -55,6 +67,16 @@ public class JwtService {
         try {
             jwtDecoder.decode(token);
             return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean validateResetPasswordToken(String token) {
+        try {
+            var decoded = jwtDecoder.decode(token);
+            String tokenType = decoded.getClaimAsString("type");
+            return "reset".equals(tokenType);
         } catch (Exception e) {
             return false;
         }
