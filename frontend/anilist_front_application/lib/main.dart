@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:anilist_front_application/ui/pages/auth/login_page.dart';
+import 'package:anilist_front_application/ui/pages/main/home_page.dart';
 
 class Main extends StatelessWidget {
   const Main({super.key});
@@ -11,9 +13,11 @@ class Main extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const LoginPage(),
+      initialRoute: '/login',
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/home': (context) => const HomePage(),
+      },
     );
   }
-
-  
 }

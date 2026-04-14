@@ -14,6 +14,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.anilist.backend.server.controller.exceptions.handler.AccesDeniedExceptionHandler;
+import com.anilist.backend.server.controller.exceptions.handler.InvalidTokenExceptionHandler;
+
 import lombok.RequiredArgsConstructor;
 
 @EnableWebSecurity
@@ -21,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final InvalidTokenExceptionHandler invalidTokenExceptionHandler;
+    private final AccesDeniedExceptionHandler accesDeniedExceptionHandler;
     private final UserDetailsService userDetailsService;
 
     @Bean
@@ -33,7 +38,17 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+            
+            .exceptionHandling(exception -> exception
+                .accessDeniedHandler(accesDeniedExceptionHandler)
+                .authenticationEntryPoint(invalidTokenExceptionHandler)
+                
+            )
+            
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer
+                .withDefaults())
+                .authenticationEntryPoint(invalidTokenExceptionHandler)
+                .accessDeniedHandler(accesDeniedExceptionHandler))
             .authenticationProvider(authenticationProvider());
 
         return http.build();

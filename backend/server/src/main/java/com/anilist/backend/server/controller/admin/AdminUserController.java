@@ -21,7 +21,7 @@ import com.anilist.backend.server.service.exceptions.custom.UserNotFoundExceptio
 import com.anilist.backend.server.DTO.response.user.UserResponseDTO;
 import com.anilist.backend.server.DTO.response.user.UserListResponseDTO;
 import com.anilist.backend.server.infra.http.success.SuccessAPIResponse;
-import com.anilist.backend.server.infra.http.error.ErrorAPIResponse;
+import com.anilist.backend.server.controller.exceptions.StandartError;
 
 import lombok.RequiredArgsConstructor;
 
@@ -39,44 +39,100 @@ public class AdminUserController {
 
 
     @PostMapping()
-    public ResponseEntity<?> createUser(@RequestBody AdminUserCreateDTO dto) {
+    public ResponseEntity<?> createUser(@RequestBody AdminUserCreateDTO dto, jakarta.servlet.http.HttpServletRequest request) {
         try {
             UserResponseDTO createdUser = adminUserService.createUser(dto);
             return ResponseEntity.ok(new SuccessAPIResponse<>(createdUser, "User created successfully"));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(new ErrorAPIResponse<>(List.of(e.getMessage()), "Failed to create user"));
+            StandartError error = new StandartError();
+            error.setTimestamp(java.time.Instant.now());
+            error.setStatus(400);
+            error.setError("Bad Request");
+            error.setMessage("Failed to create user");
+            error.setPath(request.getRequestURI());
+            error.setErrors(List.of(e.getMessage()));
+            return ResponseEntity.badRequest().body(error);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(new ErrorAPIResponse<>(List.of(e.getMessage()), "Erro interno ao criar usuário"));
+            StandartError error = new StandartError();
+            error.setTimestamp(java.time.Instant.now());
+            error.setStatus(500);
+            error.setError("Internal Server Error");
+            error.setMessage("Erro interno ao criar usuário");
+            error.setPath(request.getRequestURI());
+            error.setErrors(List.of(e.getMessage()));
+            return ResponseEntity.status(500).body(error);
         }
     }
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable UUID id, @RequestBody AdminUserUpdateDTO dto) {
+    public ResponseEntity<?> updateUser(@PathVariable UUID id, @RequestBody AdminUserUpdateDTO dto, jakarta.servlet.http.HttpServletRequest request) {
         try {
             UserResponseDTO updatedUser = adminUserService.updateUser(id, dto);
             return ResponseEntity.ok(new SuccessAPIResponse<>(updatedUser, "User updated successfully"));
         } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorAPIResponse<>(List.of(e.getMessage()), "User not found"));
+            StandartError error = new StandartError();
+            error.setTimestamp(java.time.Instant.now());
+            error.setStatus(404);
+            error.setError("Not Found");
+            error.setMessage("User not found");
+            error.setPath(request.getRequestURI());
+            error.setErrors(List.of(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(new ErrorAPIResponse<>(List.of(e.getMessage()), "Failed to update user"));
+            StandartError error = new StandartError();
+            error.setTimestamp(java.time.Instant.now());
+            error.setStatus(400);
+            error.setError("Bad Request");
+            error.setMessage("Failed to update user");
+            error.setPath(request.getRequestURI());
+            error.setErrors(List.of(e.getMessage()));
+            return ResponseEntity.badRequest().body(error);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(new ErrorAPIResponse<>(List.of(e.getMessage()), "Erro interno ao atualizar usuário"));
+            StandartError error = new StandartError();
+            error.setTimestamp(java.time.Instant.now());
+            error.setStatus(500);
+            error.setError("Internal Server Error");
+            error.setMessage("Erro interno ao atualizar usuário");
+            error.setPath(request.getRequestURI());
+            error.setErrors(List.of(e.getMessage()));
+            return ResponseEntity.status(500).body(error);
         }
     }
 
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable UUID id) {
+    public ResponseEntity<?> deleteUser(@PathVariable UUID id, jakarta.servlet.http.HttpServletRequest request) {
         try {
             SuccessAPIResponse<Void> response = adminUserService.deleteUserById(id);
             return ResponseEntity.ok(response);
         } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorAPIResponse<>(List.of(e.getMessage()), "User not found"));
+            StandartError error = new StandartError();
+            error.setTimestamp(java.time.Instant.now());
+            error.setStatus(404);
+            error.setError("Not Found");
+            error.setMessage("User not found");
+            error.setPath(request.getRequestURI());
+            error.setErrors(List.of(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(new ErrorAPIResponse<>(List.of(e.getMessage()), "Failed to delete user"));
+            StandartError error = new StandartError();
+            error.setTimestamp(java.time.Instant.now());
+            error.setStatus(400);
+            error.setError("Bad Request");
+            error.setMessage("Failed to delete user");
+            error.setPath(request.getRequestURI());
+            error.setErrors(List.of(e.getMessage()));
+            return ResponseEntity.badRequest().body(error);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(new ErrorAPIResponse<>(List.of(e.getMessage()), "Erro interno ao deletar usuário"));
+            StandartError error = new StandartError();
+            error.setTimestamp(java.time.Instant.now());
+            error.setStatus(500);
+            error.setError("Internal Server Error");
+            error.setMessage("Erro interno ao deletar usuário");
+            error.setPath(request.getRequestURI());
+            error.setErrors(List.of(e.getMessage()));
+            return ResponseEntity.status(500).body(error);
         }
     }
 

@@ -6,3 +6,4 @@ public record AdminReviewCreateDTO(
     Integer rating,
     String comment
 ) {}
+

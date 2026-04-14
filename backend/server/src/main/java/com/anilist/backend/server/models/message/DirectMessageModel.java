@@ -20,4 +20,8 @@ public class DirectMessageModel extends MessageModel {
     @JoinColumn(name = "receiver_id")
     private UserModel receiver;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id")
+    private UserModel sender;
+
 }

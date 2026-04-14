@@ -42,6 +42,7 @@ class _LoginFormWidgetsState extends State<LoginFormWidgets> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Login realizado com sucesso!')),
         );
+        Navigator.of(context).pushReplacementNamed('/home');
       }
     } catch (e) {
       setState(() {
