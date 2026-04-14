@@ -16,6 +16,14 @@ import com.anilist.backend.server.DTO.anime.UserAnimeFavoriteDTO;
 import com.anilist.backend.server.DTO.anime.UserAnimeStatusUpdateDTO;
 import com.anilist.backend.server.service.anime.UserAnimeRelationshipService;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import com.anilist.backend.server.DTO.response.anime.AnimeListResponseDTO;
+import com.anilist.backend.server.DTO.response.anime.AnimeFavoriteResponseDTO;
+import com.anilist.backend.server.DTO.response.anime.AnimeStatusUpdateResponseDTO;
+import com.anilist.backend.server.infra.http.success.SuccessAPIResponse;
+
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -26,46 +34,58 @@ public class AnimeController {
 
     private final UserAnimeRelationshipService userAnimeRelationshipService;
 
+    @GetMapping("/search")
+    public ResponseEntity<?> searchAnime(@RequestParam String query, JwtAuthenticationToken authentication) {
+        AnimeListResponseDTO results = userAnimeRelationshipService.searchAnimeWithCache(query);
+        return ResponseEntity.ok(new SuccessAPIResponse<>(results, "Busca de animes"));
+    }
+
     @PostMapping("/add")
-    public ResponseEntity<String> addAnimeToList(@Valid @RequestBody UserAnimeAddDTO request, JwtAuthenticationToken authentication) {
+    public ResponseEntity<?> addAnimeToList(@Valid @RequestBody UserAnimeAddDTO request, JwtAuthenticationToken authentication) {
         String username = authentication.getToken().getSubject();
-        return ResponseEntity.ok(userAnimeRelationshipService.addUserAnimeRelationship(
-                new UserAnimeAddDTO(username, request.animeId(), request.status())));
+        SuccessAPIResponse<Void> response = userAnimeRelationshipService.addUserAnimeRelationship(
+                new UserAnimeAddDTO(username, request.animeId(), request.status()));
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/remove")
-    public ResponseEntity<String> removeAnimeFromList(@Valid @RequestBody UserAnimeDeleteDTO request, JwtAuthenticationToken authentication) {
+    public ResponseEntity<?> removeAnimeFromList(@Valid @RequestBody UserAnimeDeleteDTO request, JwtAuthenticationToken authentication) {
         String username = authentication.getToken().getSubject();
-        return ResponseEntity.ok(userAnimeRelationshipService.deleteUserAnimeRelationship(
-                new UserAnimeDeleteDTO(username, request.animeId())));
+        SuccessAPIResponse<Void> response = userAnimeRelationshipService.deleteUserAnimeRelationship(
+                new UserAnimeDeleteDTO(username, request.animeId()));
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/update/status")
-    public ResponseEntity<String> updateAnimeStatus(@Valid @RequestBody UserAnimeStatusUpdateDTO request, JwtAuthenticationToken authentication) {
+    public ResponseEntity<?> updateAnimeStatus(@Valid @RequestBody UserAnimeStatusUpdateDTO request, JwtAuthenticationToken authentication) {
         String username = authentication.getToken().getSubject();
-        return ResponseEntity.ok(userAnimeRelationshipService.updateAnimeStatus(
-                new UserAnimeStatusUpdateDTO(username, request.animeId(), request.status())));
+        AnimeStatusUpdateResponseDTO response = userAnimeRelationshipService.updateAnimeStatus(
+                new UserAnimeStatusUpdateDTO(username, request.animeId(), request.status()));
+        return ResponseEntity.ok(new SuccessAPIResponse<>(response, response.message()));
     }
 
     @PutMapping("/update/favorite")
-    public ResponseEntity<String> toggleFavorite(@Valid @RequestBody UserAnimeFavoriteDTO request, JwtAuthenticationToken authentication) {
+    public ResponseEntity<?> toggleFavorite(@Valid @RequestBody UserAnimeFavoriteDTO request, JwtAuthenticationToken authentication) {
         String username = authentication.getToken().getSubject();
-        return ResponseEntity.ok(userAnimeRelationshipService.toggleFavorite(
-                new UserAnimeFavoriteDTO(username, request.animeId(), request.favorite())));
+        AnimeFavoriteResponseDTO response = userAnimeRelationshipService.toggleFavorite(
+                new UserAnimeFavoriteDTO(username, request.animeId(), request.favorite()));
+        return ResponseEntity.ok(new SuccessAPIResponse<>(response, response.isFavorite() ? "Favorito atualizado" : "Favorito removido"));
     }
 
     @PostMapping("/review")
-    public ResponseEntity<String> addReview(@Valid @RequestBody AnimeReviewDTO request, JwtAuthenticationToken authentication) {
+    public ResponseEntity<?> addReview(@Valid @RequestBody AnimeReviewDTO request, JwtAuthenticationToken authentication) {
         String username = authentication.getToken().getSubject();
-        return ResponseEntity.ok(userAnimeRelationshipService.addReviewToAnime(
-                new AnimeReviewDTO(username, request.animeId(), request.reviewText(), request.rating())));
+        SuccessAPIResponse<Void> response = userAnimeRelationshipService.addReviewToAnime(
+                new AnimeReviewDTO(username, request.animeId(), request.reviewText(), request.rating()));
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/review")
-    public ResponseEntity<String> deleteReview(@Valid @RequestBody UserAnimeDeleteDTO request, JwtAuthenticationToken authentication) {
+    public ResponseEntity<?> deleteReview(@Valid @RequestBody UserAnimeDeleteDTO request, JwtAuthenticationToken authentication) {
         String username = authentication.getToken().getSubject();
-        return ResponseEntity.ok(userAnimeRelationshipService.deleteReview(
-                new UserAnimeDeleteDTO(username, request.animeId())));
+        SuccessAPIResponse<Void> response = userAnimeRelationshipService.deleteReview(
+                new UserAnimeDeleteDTO(username, request.animeId()));
+        return ResponseEntity.ok(response);
     }
 
 }

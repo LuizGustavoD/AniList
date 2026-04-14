@@ -1,6 +1,8 @@
 package com.anilist.backend.server.controller.profile;
 
-import java.util.Map;
+import com.anilist.backend.server.DTO.response.profile.UserProfileResponseDTO;
+import com.anilist.backend.server.DTO.response.profile.UserProfilePictureUpdateResponseDTO;
+import com.anilist.backend.server.infra.http.success.SuccessAPIResponse;
 
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -30,23 +32,26 @@ public class UserProfileController {
     private final UserProfileService userProfileService;
 
     @GetMapping("/me")
-    public ResponseEntity<Map<String, Object>> getMyProfile(JwtAuthenticationToken authentication) {
+    public ResponseEntity<?> getMyProfile(JwtAuthenticationToken authentication) {
         String username = authentication.getToken().getSubject();
-        return ResponseEntity.ok(userProfileService.getProfile(username));
+        UserProfileResponseDTO dto = userProfileService.getProfile(username);
+        return ResponseEntity.ok(new SuccessAPIResponse<>(dto, "Perfil do usuário"));
     }
 
     @PostMapping(value = "/picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Map<String, String>> uploadProfilePicture(
+    public ResponseEntity<?> uploadProfilePicture(
             JwtAuthenticationToken authentication,
             @RequestParam("file") MultipartFile file) {
         String username = authentication.getToken().getSubject();
-        return ResponseEntity.ok(userProfileService.uploadProfilePicture(username, file));
+        UserProfilePictureUpdateResponseDTO dto = userProfileService.uploadProfilePicture(username, file);
+        return ResponseEntity.ok(new SuccessAPIResponse<>(dto, dto.message()));
     }
 
     @DeleteMapping("/picture")
-    public ResponseEntity<Map<String, String>> deleteProfilePicture(JwtAuthenticationToken authentication) {
+    public ResponseEntity<?> deleteProfilePicture(JwtAuthenticationToken authentication) {
         String username = authentication.getToken().getSubject();
-        return ResponseEntity.ok(userProfileService.deleteProfilePicture(username));
+        UserProfilePictureUpdateResponseDTO dto = userProfileService.deleteProfilePicture(username);
+        return ResponseEntity.ok(new SuccessAPIResponse<>(dto, dto.message()));
     }
 
     @GetMapping("/picture/{filename}")
@@ -59,10 +64,10 @@ public class UserProfileController {
     }
 
     @PostMapping("/update")
-    public ResponseEntity<String> updateUserAttributes(JwtAuthenticationToken authentication, @RequestBody ChangeUserAtributesDTO request) {
+    public ResponseEntity<?> updateUserAttributes(JwtAuthenticationToken authentication, @RequestBody ChangeUserAtributesDTO request) {
         String username = authentication.getToken().getSubject();
-
-        return ResponseEntity.ok(userProfileService.changeUserAttibutes(request, username));
+        SuccessAPIResponse<Void> response = userProfileService.changeUserAttibutes(request, username);
+        return ResponseEntity.ok(response);
     }
 
 }

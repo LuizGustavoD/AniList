@@ -1,7 +1,8 @@
 package com.anilist.backend.server.service.profile;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.anilist.backend.server.DTO.response.profile.UserProfilePictureUpdateResponseDTO;
+import com.anilist.backend.server.DTO.response.profile.UserProfileResponseDTO;
+import com.anilist.backend.server.infra.http.success.SuccessAPIResponse;
 
 import org.springframework.core.io.Resource;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,24 +24,14 @@ public class UserProfileService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
 
-    public Map<String, Object> getProfile(String username) {
+        public UserProfileResponseDTO getProfile(String username) {
         UserModel user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+            .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        String avatarUrl = user.getProfilePicture() != null ? "/api/profile/picture/" + user.getProfilePicture() : null;
+        return new UserProfileResponseDTO(user.getId(), user.getUsername(), user.getEmail(), avatarUrl, user.getAbout());
+        }
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("id", user.getId());
-        response.put("username", user.getUsername());
-        response.put("email", user.getEmail());
-        response.put("role", user.getRole().getRole().name());
-        response.put("createdAt", user.getCreatedAt().toString());
-        response.put("profilePictureUrl", user.getProfilePicture() != null
-                ? "/api/profile/picture/" + user.getProfilePicture()
-                : null);
-
-        return response;
-    }
-
-    public Map<String, String> uploadProfilePicture(String username, MultipartFile file) {
+    public UserProfilePictureUpdateResponseDTO uploadProfilePicture(String username, MultipartFile file) {
         UserModel user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
@@ -52,13 +43,10 @@ public class UserProfileService {
         user.setProfilePicture(filename);
         userRepository.save(user);
 
-        return Map.of(
-                "message", "Foto de perfil atualizada",
-                "profilePictureUrl", "/api/profile/picture/" + filename
-        );
+        return new UserProfilePictureUpdateResponseDTO(user.getId(), "/api/profile/picture/" + filename, "Foto de perfil atualizada");
     }
 
-    public Map<String, String> deleteProfilePicture(String username) {
+    public UserProfilePictureUpdateResponseDTO deleteProfilePicture(String username) {
         UserModel user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
@@ -68,19 +56,19 @@ public class UserProfileService {
             userRepository.save(user);
         }
 
-        return Map.of("message", "Foto de perfil removida");
+        return new UserProfilePictureUpdateResponseDTO(user.getId(), null, "Foto de perfil removida");
     }
 
     public Resource loadProfilePicture(String filename) {
         return fileStorageService.load(filename);
     }
 
-    public String changeUserAttibutes(ChangeUserAtributesDTO request, String username) {
+    public SuccessAPIResponse<Void> changeUserAttibutes(ChangeUserAtributesDTO request, String username) {
         UserModel user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            return "Incorrect password. User attributes not updated.";
+            return new SuccessAPIResponse<>(null, "Incorrect password. User attributes not updated.");
         }
 
         if (request.email() != null) {
@@ -94,7 +82,6 @@ public class UserProfileService {
         }
 
         userRepository.save(user);
-        return "User attributes updated successfully";
-
+        return new SuccessAPIResponse<>(null, "User attributes updated successfully");
     }
 }

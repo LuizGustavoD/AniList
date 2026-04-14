@@ -1,6 +1,7 @@
 package com.anilist.backend.server.controller.profile;
 
 import org.springframework.http.ResponseEntity;
+import com.anilist.backend.server.infra.http.success.SuccessAPIResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +20,8 @@ public class UsersFriendshipController {
     private final UserFriendshipService userFriendshipService;
     
     @PostMapping("/send/request")
-    public ResponseEntity<String> sendFriendRequest(@RequestBody UserFriendshipRequestDTO request) {
-        String response = userFriendshipService.userFriendshipRequestSend(request);
+    public ResponseEntity<?> sendFriendRequest(@RequestBody UserFriendshipRequestDTO request) {
+        SuccessAPIResponse<Void> response = userFriendshipService.userFriendshipRequestSend(request);
         return ResponseEntity.ok(response);
     }
     

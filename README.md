@@ -145,7 +145,9 @@ AnimeList/
 │       │   ├── profile/        # Profile, Friendships
 │       │   ├── message/        # Mensagens em grupo/diretas
 │       │   ├── mail/           # Envio de e-mails
-│       │   └── storage/        # Upload de arquivos
+│       │   ├── storage/        # Upload de arquivos
+│       │   └── exceptions/
+│       │       └── custom/     # Exceções de regra de negócio (UserNotFound, InvalidToken, etc)
 │       ├── models/
 │       │   ├── anime/          # Anime, Reviews, UserAnime
 │       │   ├── user/           # UserModel
@@ -258,4 +260,21 @@ cd frontend/anilist_front_application
 
 flutter pub get
 flutter run
+```
+
+---
+
+## ❗ Tratamento de Erros
+
+Todas as regras de negócio lançam exceções personalizadas (ex: `UserNotFoundException`, `InvalidTokenException`, etc) localizadas em `service/exceptions/custom`. O `ControllerExceptionHandler` centraliza o tratamento dessas exceptions, retornando respostas padronizadas com status HTTP e mensagens claras para o frontend.
+
+Exemplo de resposta de erro:
+
+```json
+{
+  "timestamp": "2026-04-10T12:34:56.789Z",
+  "status": 404,
+  "error": "User Not Found",
+  "message": "Usuário não encontrado"
+}
 ```

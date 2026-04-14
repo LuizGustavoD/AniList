@@ -1,6 +1,8 @@
 package com.anilist.backend.server.controller.auth;
 
 import org.springframework.http.ResponseEntity;
+import com.anilist.backend.server.infra.http.success.SuccessAPIResponse;
+import com.anilist.backend.server.infra.http.error.ErrorAPIResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +15,7 @@ import com.anilist.backend.server.service.auth.UserRegisterService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Map;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -23,14 +25,22 @@ public class UserRegisterController {
     private final UserRegisterService userRegisterService;
 
     @PostMapping
-    public ResponseEntity<Map<String, String>> registerUser(@Valid @RequestBody UserRegisterDTO userRegisterDTO) {
-        String message = userRegisterService.registerUser(userRegisterDTO);
-        return ResponseEntity.ok(Map.of("message", message));
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegisterDTO userRegisterDTO) {
+        try {
+            String message = userRegisterService.registerUser(userRegisterDTO);
+            return ResponseEntity.ok(new SuccessAPIResponse<>(null, message));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorAPIResponse<>(List.of(e.getMessage()), "Erro ao registrar usuário"));
+        }
     }
 
     @PostMapping("/confirm-email")
-    public ResponseEntity<Map<String, String>> confirmEmail(@RequestParam String token) {
-        String authToken = userRegisterService.confirmEmail(token);
-        return ResponseEntity.ok(Map.of("token", authToken));
+    public ResponseEntity<?> confirmEmail(@RequestParam String token) {
+        try {
+            String authToken = userRegisterService.confirmEmail(token);
+            return ResponseEntity.ok(new SuccessAPIResponse<>(authToken, "Email confirmado com sucesso"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorAPIResponse<>(List.of(e.getMessage()), "Erro ao confirmar email"));
+        }
     }
 }

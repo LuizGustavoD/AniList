@@ -1,6 +1,7 @@
 package com.anilist.backend.server.controller.exceptions.handler;
 
 import java.time.Instant;
+import java.util.Collections;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.anilist.backend.server.controller.exceptions.StandartError;
 import com.anilist.backend.server.service.exceptions.custom.AnimeNotFoundException;
+import com.anilist.backend.server.service.exceptions.custom.DuplicateEmailException;
 import com.anilist.backend.server.service.exceptions.custom.EmailAlreadyUsedException;
 import com.anilist.backend.server.service.exceptions.custom.EntityNotFoundException;
 import com.anilist.backend.server.service.exceptions.custom.FriendshipRequestException;
@@ -16,9 +18,16 @@ import com.anilist.backend.server.service.exceptions.custom.ResourceAlreadyExist
 import com.anilist.backend.server.service.exceptions.custom.UnauthorizedActionException;
 import com.anilist.backend.server.service.exceptions.custom.UserNotFoundException;
 import com.anilist.backend.server.service.exceptions.custom.ValidationException;
+import com.anilist.backend.server.infra.http.error.ErrorAPIResponse;
 
 @ControllerAdvice
 public class ControllerExceptionHandler {
+
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ErrorAPIResponse<Void>> handleDuplicateEmailException(DuplicateEmailException ex) {
+        ErrorAPIResponse<Void> error = new ErrorAPIResponse<>(Collections.singletonList(ex.getMessage()), "Duplicate email error");
+        return ResponseEntity.status(409).body(error);
+    }
     
 
     @ExceptionHandler(EntityNotFoundException.class)
