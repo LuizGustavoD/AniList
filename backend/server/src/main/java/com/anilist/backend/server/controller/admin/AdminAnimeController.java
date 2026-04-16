@@ -17,8 +17,18 @@ import com.anilist.backend.server.service.admin.AdminAnimeService;
 import com.anilist.backend.server.service.exceptions.custom.AnimeNotFoundException;
 
 import jakarta.annotation.security.RolesAllowed;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.RequiredArgsConstructor;
 
+
+@Tag(name = "Admin Anime", description = "Operações administrativas de anime")
 @RequiredArgsConstructor
 @RolesAllowed("ROLE_ADMIN")
 @RestController
@@ -28,8 +38,22 @@ public class AdminAnimeController {
     private final AdminAnimeService adminAnimeService;
 
 
+
+    @Operation(summary = "Criar anime", description = "Cria um novo anime administrativo.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Anime criado com sucesso",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessAPIResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Erro de validação ou negócio",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class))),
+        @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class)))
+    })
+    
+    @RateLimiter(name = "adminAnimeCreateLimiter")
     @PostMapping()
-    public ResponseEntity<?> createAnime(@RequestBody AdminAnimeCreateDTO dto, jakarta.servlet.http.HttpServletRequest request) {
+    public ResponseEntity<?> createAnime(
+            @RequestBody AdminAnimeCreateDTO dto,
+            jakarta.servlet.http.HttpServletRequest request) {
         try {
             AnimeResponseDTO createdAnime = adminAnimeService.createAnime(dto);
             return ResponseEntity.ok(new SuccessAPIResponse<>(createdAnime, "Anime created successfully"));
@@ -55,8 +79,24 @@ public class AdminAnimeController {
     }
 
 
+
+    @Operation(summary = "Atualizar anime", description = "Atualiza os dados de um anime administrativo.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Anime atualizado com sucesso",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessAPIResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Erro de validação ou negócio",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class))),
+        @ApiResponse(responseCode = "404", description = "Anime não encontrado",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class))),
+        @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class)))
+    })
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "adminAnimeCreateLimiter")
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateAnime(@PathVariable Long id, @RequestBody AdminAnimeUpdateDTO dto, jakarta.servlet.http.HttpServletRequest request) {
+    public ResponseEntity<?> updateAnime(
+            @Schema(description = "ID do anime") @PathVariable Long id,
+            @RequestBody AdminAnimeUpdateDTO dto,
+            jakarta.servlet.http.HttpServletRequest request) {
         try {
             AnimeResponseDTO updatedAnime = adminAnimeService.updateAnime(id, dto);
             return ResponseEntity.ok(new SuccessAPIResponse<>(updatedAnime, "Anime updated successfully"));
@@ -91,8 +131,23 @@ public class AdminAnimeController {
     }
 
 
+
+    @Operation(summary = "Deletar anime", description = "Remove um anime administrativo pelo ID.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Anime removido com sucesso",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessAPIResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Erro de validação ou negócio",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class))),
+        @ApiResponse(responseCode = "404", description = "Anime não encontrado",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class))),
+        @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class)))
+    })
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "adminAnimeCreateLimiter")
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteAnime(@PathVariable Long id, jakarta.servlet.http.HttpServletRequest request) {
+    public ResponseEntity<?> deleteAnime(
+            @Schema(description = "ID do anime") @PathVariable Long id,
+            jakarta.servlet.http.HttpServletRequest request) {
         try {
             SuccessAPIResponse<Void> response = adminAnimeService.deleteAnimeById(id);
             return ResponseEntity.ok(response);
@@ -127,14 +182,34 @@ public class AdminAnimeController {
     }
 
 
+
+    @Operation(summary = "Listar todos os animes", description = "Retorna a lista de todos os animes administrativos.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessAPIResponse.class)))
+    })
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "adminAnimeCreateLimiter")
     @GetMapping("/all")
     public ResponseEntity<?> getAllAnimes() {
         AnimeListResponseDTO list = adminAnimeService.getAllAnimes();
         return ResponseEntity.ok(new SuccessAPIResponse<>(list, "Listagem de animes"));
     }
 
+
+    @Operation(summary = "Buscar anime por ID", description = "Retorna um anime administrativo pelo ID.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Anime encontrado",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessAPIResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Anime não encontrado",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class))),
+        @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class)))
+    })
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "adminAnimeCreateLimiter")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getAnimeById(@PathVariable Long id, jakarta.servlet.http.HttpServletRequest request) {
+    public ResponseEntity<?> getAnimeById(
+            @Schema(description = "ID do anime") @PathVariable Long id,
+            jakarta.servlet.http.HttpServletRequest request) {
         try {
             AnimeResponseDTO anime = adminAnimeService.getAnimeById(id);
             return ResponseEntity.ok(new SuccessAPIResponse<>(anime, "Anime encontrado"));
@@ -159,8 +234,21 @@ public class AdminAnimeController {
         }
     }
 
+
+    @Operation(summary = "Buscar anime por MAL ID", description = "Retorna um anime administrativo pelo ID do MyAnimeList.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Anime encontrado",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessAPIResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Anime não encontrado",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class))),
+        @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class)))
+    })
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "adminAnimeCreateLimiter")
     @GetMapping("/mal/{malId}")
-    public ResponseEntity<?> getAnimeByMalId(@PathVariable Long malId, jakarta.servlet.http.HttpServletRequest request) {
+    public ResponseEntity<?> getAnimeByMalId(
+            @Schema(description = "ID do MAL") @PathVariable Long malId,
+            jakarta.servlet.http.HttpServletRequest request) {
         try {
             AnimeResponseDTO anime = adminAnimeService.getAnimeByMalId(malId);
             return ResponseEntity.ok(new SuccessAPIResponse<>(anime, "Anime encontrado"));

@@ -23,8 +23,8 @@ Plataforma social full-stack para gerenciamento de listas de animes, com funcion
 | Tecnologia | Versão |
 |---|---|
 | Java | 21 |
-| Spring Boot | 4.0.5 |
-| Spring Security + OAuth2 | 6 |
+| Spring Boot | 3.2.5 |
+| Spring Security + OAuth2 | 6.2.4 |
 | Spring Data JPA (Hibernate) | - |
 | Spring WebSocket (STOMP) | - |
 | Spring Mail | - |
@@ -32,6 +32,7 @@ Plataforma social full-stack para gerenciamento de listas de animes, com funcion
 | MySQL | 8+ |
 | Lombok | - |
 | SpringDoc OpenAPI (Swagger) | 2.6.0 |
+| Resilience4j RateLimiter | 1.7.0 |
 
 ### Frontend
 
@@ -40,6 +41,8 @@ Plataforma social full-stack para gerenciamento de listas de animes, com funcion
 | Flutter | ^3.7.2 |
 | Dart | 3.7.2+ |
 | Material Design 3 | - |
+| http | ^1.3.0 |
+| web_socket_channel | - |
 
 **Plataformas suportadas:** Android, iOS, Web, Windows, Linux, macOS
 
@@ -128,85 +131,49 @@ Controller → Service → Repository → Database
 
 ---
 
-## 📁 Estrutura do Projeto
+## 📁 Estrutura do Projeto (atualizada)
 
 ```
 AnimeList/
 ├── backend/server/
 │   └── src/main/java/com/anilist/backend/server/
-│       ├── controller/
-│       │   ├── anime/          # AnimeController
-│       │   ├── auth/           # Login, Register
-│       │   ├── profile/        # Profile, Friendships
-│       │   └── messages/       # WebSocket handlers
-│       ├── service/
-│       │   ├── anime/          # Relacionamento usuário-anime
-│       │   ├── auth/           # Login, Register
-│       │   ├── profile/        # Profile, Friendships
-│       │   ├── message/        # Mensagens em grupo/diretas
-│       │   ├── mail/           # Envio de e-mails
-│       │   ├── storage/        # Upload de arquivos
-│       │   └── exceptions/
-│       │       └── custom/     # Exceções de regra de negócio (UserNotFound, InvalidToken, etc)
-│       ├── models/
-│       │   ├── anime/          # Anime, Reviews, UserAnime
-│       │   ├── user/           # UserModel
-│       │   ├── role/           # Roles, EnumRole
-│       │   ├── friendship/     # Friendships, Requests
-│       │   ├── message/        # Direct, Group (SINGLE_TABLE)
-│       │   └── group/          # Groups, Memberships
-│       ├── repository/
-│       │   ├── user/           # User, Roles
-│       │   ├── anime/          # Anime, Reviews, UserAnime
-│       │   ├── friendship/     # Friendships, Requests
-│       │   ├── message/        # Direct, Group messages
-│       │   └── group/          # Groups, Memberships
-│       ├── DTO/
-│       │   ├── anime/          # Add, Delete, Status, Favorite, Review
-│       │   ├── auth/           # Login, Register
-│       │   ├── profile/        # Attributes, Friendship requests
-│       │   └── message/        # Group messages
-│       ├── config/             # WebSocket, RestTemplate
-│       └── security/
-│           ├── config/         # SecurityConfig
-│           └── jwt/            # JwtService, JwtConfig, JwtUtils
+│       ├── controller/      # REST e WebSocket controllers
+│       ├── service/        # Lógica de negócio
+│       ├── repository/     # Spring Data JPA
+│       ├── models/         # Entidades JPA
+│       ├── DTO/            # Data Transfer Objects
+│       ├── config/         # Configurações (WebSocket, Security, etc)
+│       └── security/       # JWT, OAuth2, etc
+│   └── src/main/resources/db/migration/ # Migrações Flyway
 ├── frontend/anilist_front_application/
 │   └── lib/
-│       ├── main.dart
-│       ├── API/                # Clients HTTP
-│       ├── service/            # Lógica de negócio
-│       └── ui/
-│           ├── pages/          # Telas
-│           └── widgets/        # Componentes reutilizáveis
-├── docker/                     # Docker Compose + Dockerfile
-├── server/                     # Caddy + WAF (OWASP CRS)
-├── uploads/                    # Arquivos de usuários
-└── logs/                       # Logs da aplicação
+│       ├── API/            # HTTP/WebSocket clients
+│       ├── service/        # Serviços de negócio
+│       └── ui/             # Páginas e widgets
+├── docker/                 # Docker Compose + Dockerfile
+├── server/                 # Caddy + WAF (OWASP CRS)
+├── uploads/                # Arquivos de usuários
+└── logs/                   # Logs da aplicação
 ```
 
 ---
 
-## 🗄 Banco de Dados
+## 🗄 Banco de Dados (atualizado)
 
-MySQL 8+ com migrações gerenciadas pelo **Flyway**:
+MySQL 8+ com migrações Flyway:
 
 | Migração | Descrição |
 |---|---|
-| `V1__init_schemas.sql` | Tabelas iniciais: users, roles, anime, user_anime, reviews |
-| `V2__add_profile_picture.sql` | Coluna profile_picture em users |
-| `V3__add_friendship_tables.sql` | Tabelas de amizade e solicitações |
-| `V4__add_messages_tables.sql` | Mensagens (SINGLE_TABLE), grupos e memberships |
+| `V1__init_schemas.sql` | users, roles, anime, user_anime, reviews |
+| `V2__add_profile_picture.sql` | profile_picture em users |
+| `V3__add_friendship_tables.sql` | friendships e requests |
+| `V4__add_messages_tables.sql` | grupos, memberships, mensagens (SINGLE_TABLE) |
 | `V5__update_anime_tables.sql` | MAL ID, favoritos, about, constraints |
+| `V6__update_users_table.sql` | banner_url em users |
+| `V7__add_token_tables.sql` | tokens de confirmação/sessão |
 
-### Herança JPA (Mensagens)
-
-Estratégia **SINGLE_TABLE** com coluna discriminadora `message_type`:
-
-```
-messages
-├── DIRECT → receiver_id (FK → users)
-└── GROUP  → group_id (FK → user_groups)
-```
+- **Herança JPA**: Mensagens (direta/grupo) em SINGLE_TABLE.
+- **Enums**: Status de anime, roles, status de amizade, roles de grupo.
 
 ---
 
@@ -278,3 +245,18 @@ Exemplo de resposta de erro:
   "message": "Usuário não encontrado"
 }
 ```
+
+---
+
+## 🆕 Novidades da Versão Atual
+
+- **Rate Limiting**: Todos os endpoints REST do backend agora estão protegidos por Resilience4j RateLimiter, com configuração dedicada para cada controller no `application.yml`.
+- **WebSocket**: Limite de mensagens por minuto e tamanho máximo configurados para conexões WebSocket.
+- **Tokens**: Nova tabela para gerenciamento de tokens de confirmação e sessão (`V7__add_token_tables.sql`).
+- **Banner de Usuário**: Campo `banner_url` adicionado à tabela de usuários.
+- **Validação e tratamento de erros** centralizados via `ControllerExceptionHandler`.
+- **Frontend**: Serviços para autenticação, mensagens, perfil, integração HTTP e WebSocket, arquitetura modularizada.
+
+---
+
+> Para detalhes completos, consulte as migrações Flyway, o código dos models e os serviços no frontend.

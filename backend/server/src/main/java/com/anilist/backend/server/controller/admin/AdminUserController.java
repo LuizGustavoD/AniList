@@ -23,8 +23,18 @@ import com.anilist.backend.server.DTO.response.user.UserListResponseDTO;
 import com.anilist.backend.server.infra.http.success.SuccessAPIResponse;
 import com.anilist.backend.server.controller.exceptions.StandartError;
 
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.RequiredArgsConstructor;
 
+
+@Tag(name = "Admin Usuário", description = "Operações administrativas de usuário")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/admin/user")
@@ -32,14 +42,34 @@ public class AdminUserController {
 
     private final AdminUserService adminUserService;
 
+
+    @Operation(summary = "Status do controller", description = "Verifica se o controller de admin usuário está ativo.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Controller ativo",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+    })
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "adminUserCreateLimiter")
     @GetMapping("/status")
     public ResponseEntity<?> getStatus() {
         return ResponseEntity.ok("AdminUserController is up and running!");
     }
 
 
+
+    @Operation(summary = "Criar usuário", description = "Cria um novo usuário administrativo.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Usuário criado com sucesso",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessAPIResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Erro de validação ou negócio",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class))),
+        @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class)))
+    })
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "adminUserCreateLimiter")
     @PostMapping()
-    public ResponseEntity<?> createUser(@RequestBody AdminUserCreateDTO dto, jakarta.servlet.http.HttpServletRequest request) {
+    public ResponseEntity<?> createUser(
+            @RequestBody AdminUserCreateDTO dto,
+            jakarta.servlet.http.HttpServletRequest request) {
         try {
             UserResponseDTO createdUser = adminUserService.createUser(dto);
             return ResponseEntity.ok(new SuccessAPIResponse<>(createdUser, "User created successfully"));
@@ -65,8 +95,24 @@ public class AdminUserController {
     }
 
 
+
+    @Operation(summary = "Atualizar usuário", description = "Atualiza os dados de um usuário administrativo.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessAPIResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Erro de validação ou negócio",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class))),
+        @ApiResponse(responseCode = "404", description = "Usuário não encontrado",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class))),
+        @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class)))
+    })
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "adminUserCreateLimiter")
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable UUID id, @RequestBody AdminUserUpdateDTO dto, jakarta.servlet.http.HttpServletRequest request) {
+    public ResponseEntity<?> updateUser(
+            @Schema(description = "ID do usuário") @PathVariable UUID id,
+            @RequestBody AdminUserUpdateDTO dto,
+            jakarta.servlet.http.HttpServletRequest request) {
         try {
             UserResponseDTO updatedUser = adminUserService.updateUser(id, dto);
             return ResponseEntity.ok(new SuccessAPIResponse<>(updatedUser, "User updated successfully"));
@@ -101,8 +147,23 @@ public class AdminUserController {
     }
 
 
+
+    @Operation(summary = "Deletar usuário", description = "Remove um usuário administrativo pelo ID.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Usuário removido com sucesso",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessAPIResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Erro de validação ou negócio",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class))),
+        @ApiResponse(responseCode = "404", description = "Usuário não encontrado",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class))),
+        @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandartError.class)))
+    })
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "adminUserCreateLimiter")
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable UUID id, jakarta.servlet.http.HttpServletRequest request) {
+    public ResponseEntity<?> deleteUser(
+            @Schema(description = "ID do usuário") @PathVariable UUID id,
+            jakarta.servlet.http.HttpServletRequest request) {
         try {
             SuccessAPIResponse<Void> response = adminUserService.deleteUserById(id);
             return ResponseEntity.ok(response);
@@ -137,6 +198,12 @@ public class AdminUserController {
     }
 
 
+    @Operation(summary = "Listar todos os usuários", description = "Retorna a lista de todos os usuários administrativos.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessAPIResponse.class)))
+    })
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "adminUserCreateLimiter")
     @GetMapping("/all")
     public ResponseEntity<?> getAllUsers() {
         UserListResponseDTO list = adminUserService.getAllUsers();

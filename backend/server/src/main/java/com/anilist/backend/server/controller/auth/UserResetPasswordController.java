@@ -25,6 +25,7 @@ public class UserResetPasswordController {
     
     private final UserForgotPasswordService userForgotPasswordService;
 
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "userResetPasswordLimiter")
     @PostMapping("/confirm")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody UserForgotPasswordDTO request, @RequestParam String token, jakarta.servlet.http.HttpServletRequest httpRequest) {
         try {
@@ -42,6 +43,7 @@ public class UserResetPasswordController {
         }
     }
 
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "userResetPasswordLimiter")
     @PostMapping("/request")
     public ResponseEntity<?> sendForgotPasswordEmail(@Valid @RequestBody UserForgotPasswordVerifyAccountDTO request, jakarta.servlet.http.HttpServletRequest httpRequest) {
         try {

@@ -23,6 +23,7 @@ public class UserLoginController {
     
     private final UserLoginService userLoginService;
 
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "userLoginLimiter")
     @PostMapping
     public ResponseEntity<?> loginUser(@Valid @RequestBody UserLoginDTO userLoginDTO, jakarta.servlet.http.HttpServletRequest request) {
         try {

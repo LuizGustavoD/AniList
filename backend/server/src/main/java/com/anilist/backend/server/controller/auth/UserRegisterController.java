@@ -24,6 +24,7 @@ public class UserRegisterController {
     
     private final UserRegisterService userRegisterService;
 
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "userRegisterLimiter")
     @PostMapping
     public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegisterDTO userRegisterDTO, jakarta.servlet.http.HttpServletRequest request) {
         try {
@@ -41,6 +42,7 @@ public class UserRegisterController {
         }
     }
 
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "userRegisterLimiter")
     @PostMapping("/confirm-email")
     public ResponseEntity<?> confirmEmail(@RequestParam String token, jakarta.servlet.http.HttpServletRequest request) {
         try {

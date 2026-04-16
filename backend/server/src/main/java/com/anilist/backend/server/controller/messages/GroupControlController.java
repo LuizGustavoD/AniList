@@ -14,24 +14,28 @@ import org.springframework.web.bind.annotation.RestController;
 public class GroupControlController {
     
 
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "groupControlLimiter")
     @PostMapping("/create")
     public ResponseEntity<?> createGroup() {
         // Lógica para criar um grupo
         return ResponseEntity.ok("Grupo criado com sucesso");
     }
 
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "groupControlLimiter")
     @DeleteMapping("/delete/{groupId}")
     public ResponseEntity<?> deleteGroup(@PathVariable Long groupId) {
         // Lógica para deletar um grupo
         return ResponseEntity.ok("Grupo deletado com sucesso");
     }
     
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "groupControlLimiter")
     @GetMapping("{groupId}")
     public ResponseEntity<?> getGroupMembers(@PathVariable Long groupId) {
         // Lógica para obter os membros de um grupo
         return ResponseEntity.ok("Dados do grupo obtidos com sucesso");
     }
 
+    @io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "groupControlLimiter")
     @PutMapping("/{groupId}/{userId}")
     public ResponseEntity<?> updateGroupMember(@PathVariable Long groupId, @PathVariable Long userId) {
         // Lógica para atualizar um membro de um grupo

@@ -34,5 +34,19 @@ public class UserDetailsImp implements UserDetails {
     public boolean isEnabled() {
         return user.isConfirmed();
     }
-    
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 }
