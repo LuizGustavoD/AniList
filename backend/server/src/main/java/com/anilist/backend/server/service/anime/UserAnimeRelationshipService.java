@@ -26,6 +26,8 @@ import com.anilist.backend.server.repository.anime.AnimeReviewsRepository;
 import com.anilist.backend.server.repository.anime.AnimeUsersRepository;
 import com.anilist.backend.server.repository.user.UserRepository;
 import com.anilist.backend.server.client.ExternalApiClient;
+import com.anilist.backend.server.service.activity.ActivityService;
+import com.anilist.backend.server.models.activity.EnumActivityType;
 
 
 @RequiredArgsConstructor
@@ -36,6 +38,7 @@ public class UserAnimeRelationshipService {
     private final AnimeUsersRepository animeUsersRepository;
     private final AnimeReviewsRepository animeReviewsRepository;
     private final UserRepository userRepository;
+    private final ActivityService activityService;
 
     private final ExternalApiClient externalApiClient;
     public AnimeListResponseDTO searchAnimeWithCache(String query) {
@@ -96,6 +99,8 @@ public class UserAnimeRelationshipService {
         userAnime.setAnime(anime);
         userAnime.setStatus(request.status());
         animeUsersRepository.save(userAnime);
+
+        activityService.createActivity(user, EnumActivityType.ADDED_ANIME, anime.getId().toString());
 
         return new SuccessAPIResponse<>(null, "Anime added to list successfully");
     }
@@ -233,6 +238,8 @@ public class UserAnimeRelationshipService {
         review.setRating(request.rating());
         review.setComment(request.reviewText());
         animeReviewsRepository.save(review);
+
+        activityService.createActivity(user, EnumActivityType.REVIEWED_ANIME, anime.getId().toString());
 
         return new SuccessAPIResponse<>(null, "Review added successfully");
     }

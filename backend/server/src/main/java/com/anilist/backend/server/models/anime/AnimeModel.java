@@ -32,6 +32,18 @@ public class AnimeModel {
     private String description;
 
     @Column
+    private String coverUrl;
+
+    @Column
+    private String firstEp;
+
+    @Column
+    private String trailerUrl;
+
+    @Column
+    private String bannerUrl;
+
+    @Column
     private String imageUrl;
 
     @Column
